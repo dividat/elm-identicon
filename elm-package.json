@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
-    "summary": "Generate identicons from strings",
-    "repository": "https://github.com/user/project.git",
+    "summary": "Generate identicons",
+    "repository": "https://github.com/pukkamustard/elm-identicon.git",
     "license": "BSD3",
     "source-directories": [
         "src"

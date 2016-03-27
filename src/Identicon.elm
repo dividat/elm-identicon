@@ -11,6 +11,7 @@ import Svg exposing (Svg)
 import Svg.Attributes as Attributes
 import String
 import Char
+import Bitwise
 import Html
 
 
@@ -20,32 +21,35 @@ import Html
       identicon "Hello identicon!"
 -}
 identicon : String -> Html.Html
-identicon hash =
+identicon string =
   let
-    chars =
-      String.toList hash
+    hash =
+      joaatHash string
 
-    col1 =
-      chars
-
-    col2 =
-      col1
-        |> List.drop 5
-
-    col3 =
-      col2
-        |> List.drop 5
+    pixels =
+      List.repeat 15 0
+        |> List.indexedMap always
+        |> List.filter (\i -> hash `Bitwise.shiftRight` i % 2 == 0)
+        |> List.map toCoordinates
+        |> (\l -> List.append l (List.map mirror l))
+        |> List.map pixel
   in
     Svg.svg
       [ Attributes.viewBox "0 0 5 5"
-      , Attributes.fill (color hash)
+      , Attributes.fill "red"
       ]
-      [ column 0 col1
-      , column 1 col2
-      , column 2 col3
-      , column 3 col2
-      , column 4 col1
-      ]
+      pixels
+
+
+toCoordinates : Int -> ( Int, Int )
+toCoordinates i =
+  ( i % 3, i - ((i % 3) * 5) )
+
+
+
+mirror : ( number, a ) -> ( number, a )
+mirror ( x, y ) =
+  ( 4 - x, y )
 
 
 color : String -> String
@@ -53,33 +57,32 @@ color hash =
   "hsl(0, 50%, 70%)"
 
 
-column : Int -> List Char -> Svg
-column x chars =
-  Svg.g
-    []
-    (chars
-      |> List.take 5
-      |> List.indexedMap (,)
-      |> List.map (pixel x)
-      |> List.filterMap identity
-    )
-
-
-pixel : Int -> ( Int, Char ) -> Maybe Svg
-pixel x ( y, char ) =
+joaatHash : String -> Int
+joaatHash string =
   let
-    even =
-      ((Char.toCode char) % 2) == 0
+    step =
+      \b h ->
+        h
+          |> (+) b
+          |> (\x -> x + Bitwise.shiftLeft 10 x)
+          |> (\x -> Bitwise.xor x (Bitwise.shiftRight 6 x))
   in
-    if even then
-      Just
-        (Svg.rect
-          [ Attributes.y (toString y)
-          , Attributes.x (toString x)
-          , Attributes.width "1"
-          , Attributes.height "1"
-          ]
-          []
-        )
-    else
-      Nothing
+    string
+      |> String.toList
+      |> List.map Char.toCode
+      |> List.foldr step 0
+      |> (\x -> x + Bitwise.shiftLeft 3 x)
+      |> (\x -> Bitwise.xor x (Bitwise.shiftRight 11 x))
+      |> (\x -> x + Bitwise.shiftLeft 15 x)
+
+
+pixel : ( Int, Int ) -> Svg
+pixel ( x, y ) =
+  (Svg.rect
+    [ Attributes.y (toString y)
+    , Attributes.x (toString x)
+    , Attributes.width "1"
+    , Attributes.height "1"
+    ]
+    []
+  )

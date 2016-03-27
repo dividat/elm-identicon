@@ -24,7 +24,7 @@ identicon : String -> Html.Html
 identicon string =
   let
     hash =
-      joaatHash string
+      computeHash string
 
     pixels =
       List.repeat 15 0
@@ -36,29 +36,18 @@ identicon string =
   in
     Svg.svg
       [ Attributes.viewBox "0 0 5 5"
-      , Attributes.fill "red"
+      , Attributes.fill (color hash)
       ]
       pixels
 
 
-toCoordinates : Int -> ( Int, Int )
-toCoordinates i =
-  ( i % 3, i - ((i % 3) * 5) )
+{-| One-at-a-Time Hash
 
+  Taken from http://www.burtleburtle.net/bob/hash/doobs.html.
 
-
-mirror : ( number, a ) -> ( number, a )
-mirror ( x, y ) =
-  ( 4 - x, y )
-
-
-color : String -> String
-color hash =
-  "hsl(0, 50%, 70%)"
-
-
-joaatHash : String -> Int
-joaatHash string =
+-}
+computeHash : String -> Int
+computeHash string =
   let
     step =
       \b h ->
@@ -74,6 +63,33 @@ joaatHash string =
       |> (\x -> x + Bitwise.shiftLeft 3 x)
       |> (\x -> Bitwise.xor x (Bitwise.shiftRight 11 x))
       |> (\x -> x + Bitwise.shiftLeft 15 x)
+
+
+toCoordinates : Int -> ( Int, Int )
+toCoordinates i =
+  let
+    x =
+      floor (toFloat i / 5)
+
+    y =
+      i % 5
+  in
+    ( x, y )
+
+
+mirror : ( number, a ) -> ( number, a )
+mirror ( x, y ) =
+  ( 4 - x, y )
+
+
+color : Int -> String
+color hash =
+  let
+    hue =
+      (toFloat (Bitwise.shiftRightLogical -1 1)) * 320 / toFloat hash
+        |> floor
+  in
+    "hsl(" ++ toString hue ++ ", 50%, 70%)"
 
 
 pixel : ( Int, Int ) -> Svg

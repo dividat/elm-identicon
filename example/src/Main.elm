@@ -22,7 +22,7 @@ type alias Model =
 
 init : Model
 init =
-  "8b1a9953c4611296a827abf8c47804d7"
+  "Hello!"
 
 
 update : String -> Model -> Model
@@ -35,7 +35,7 @@ view address model =
   let
     field =
       Html.input
-        [ Attributes.placeholder "md5"
+        [ Attributes.placeholder "Enter a string..."
         , Events.on "input" Events.targetValue (Signal.message address)
         , inputStyle
         ]

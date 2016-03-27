@@ -5,4 +5,4 @@ This was intended to be an Elm port of [identicon.js](https://github.com/stewart
 
 ## Example
 
-See `example/` folder.
+See `example/` folder and [try it](example/index.html).

@@ -11,6 +11,7 @@ import Svg exposing (Svg)
 import Svg.Attributes as Attributes
 import String
 import Char
+import Bitwise
 import Html
 
 
@@ -22,31 +23,46 @@ import Html
 identicon : String -> Html.Html
 identicon string =
   let
+    hash =
+      computeHash string
+
     pixels =
-      string
-        |> code
+      List.repeat 15 0
+        |> List.indexedMap always
+        |> List.filter (\i -> hash `Bitwise.shiftRight` i % 2 == 0)
         |> List.map toCoordinates
         |> (\l -> List.append l (List.map mirror l))
         |> List.map pixel
   in
     Svg.svg
       [ Attributes.viewBox "0 0 5 5"
-      , Attributes.fill "blue"
+      , Attributes.fill (color hash)
       ]
       pixels
 
 
+{-| One-at-a-Time Hash
 
+  Taken from http://www.burtleburtle.net/bob/hash/doobs.html.
 
-code : String -> List Int
-code string =
-  string
-    |> String.toList
-    |> List.take 15
-    |> List.map Char.toCode
-    |> List.indexedMap (,)
-    |> List.filter (\( i, c ) -> (c % 2) == 0)
-    |> List.map fst
+-}
+computeHash : String -> Int
+computeHash string =
+  let
+    step =
+      \b h ->
+        h
+          |> (+) b
+          |> (\x -> x + Bitwise.shiftLeft 10 x)
+          |> (\x -> Bitwise.xor x (Bitwise.shiftRight 6 x))
+  in
+    string
+      |> String.toList
+      |> List.map Char.toCode
+      |> List.foldr step 0
+      |> (\x -> x + Bitwise.shiftLeft 3 x)
+      |> (\x -> Bitwise.xor x (Bitwise.shiftRight 11 x))
+      |> (\x -> x + Bitwise.shiftLeft 15 x)
 
 
 toCoordinates : Int -> ( Int, Int )
@@ -66,9 +82,14 @@ mirror ( x, y ) =
   ( 4 - x, y )
 
 
-color : String -> String
+color : Int -> String
 color hash =
-  "hsl(0, 50%, 70%)"
+  let
+    hue =
+      (toFloat (Bitwise.shiftRightLogical -1 1)) * 320 / toFloat hash
+        |> floor
+  in
+    "hsl(" ++ toString hue ++ ", 50%, 70%)"
 
 
 pixel : ( Int, Int ) -> Svg

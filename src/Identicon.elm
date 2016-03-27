@@ -20,32 +20,50 @@ import Html
       identicon "Hello identicon!"
 -}
 identicon : String -> Html.Html
-identicon hash =
+identicon string =
   let
-    chars =
-      String.toList hash
-
-    col1 =
-      chars
-
-    col2 =
-      col1
-        |> List.drop 5
-
-    col3 =
-      col2
-        |> List.drop 5
+    pixels =
+      string
+        |> code
+        |> List.map toCoordinates
+        |> (\l -> List.append l (List.map mirror l))
+        |> List.map pixel
   in
     Svg.svg
       [ Attributes.viewBox "0 0 5 5"
-      , Attributes.fill (color hash)
+      , Attributes.fill "blue"
       ]
-      [ column 0 col1
-      , column 1 col2
-      , column 2 col3
-      , column 3 col2
-      , column 4 col1
-      ]
+      pixels
+
+
+
+
+code : String -> List Int
+code string =
+  string
+    |> String.toList
+    |> List.take 15
+    |> List.map Char.toCode
+    |> List.indexedMap (,)
+    |> List.filter (\( i, c ) -> (c % 2) == 0)
+    |> List.map fst
+
+
+toCoordinates : Int -> ( Int, Int )
+toCoordinates i =
+  let
+    x =
+      floor (toFloat i / 5)
+
+    y =
+      i % 5
+  in
+    ( x, y )
+
+
+mirror : ( number, a ) -> ( number, a )
+mirror ( x, y ) =
+  ( 4 - x, y )
 
 
 color : String -> String
@@ -53,33 +71,13 @@ color hash =
   "hsl(0, 50%, 70%)"
 
 
-column : Int -> List Char -> Svg
-column x chars =
-  Svg.g
+pixel : ( Int, Int ) -> Svg
+pixel ( x, y ) =
+  (Svg.rect
+    [ Attributes.y (toString y)
+    , Attributes.x (toString x)
+    , Attributes.width "1"
+    , Attributes.height "1"
+    ]
     []
-    (chars
-      |> List.take 5
-      |> List.indexedMap (,)
-      |> List.map (pixel x)
-      |> List.filterMap identity
-    )
-
-
-pixel : Int -> ( Int, Char ) -> Maybe Svg
-pixel x ( y, char ) =
-  let
-    even =
-      ((Char.toCode char) % 2) == 0
-  in
-    if even then
-      Just
-        (Svg.rect
-          [ Attributes.y (toString y)
-          , Attributes.x (toString x)
-          , Attributes.width "1"
-          , Attributes.height "1"
-          ]
-          []
-        )
-    else
-      Nothing
+  )

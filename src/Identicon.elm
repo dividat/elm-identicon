@@ -86,8 +86,7 @@ color : Int -> String
 color hash =
   let
     hue =
-      (toFloat (Bitwise.shiftRightLogical -1 1)) * 320 / toFloat hash
-        |> floor
+      hash % 360
   in
     "hsl(" ++ toString hue ++ ", 50%, 70%)"
 

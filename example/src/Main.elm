@@ -1,70 +1,74 @@
-module Main (..) where
+module Main exposing (..)
 
-import StartApp.Simple exposing (start)
+import Html.App
 import Html exposing (Html, Attribute)
-import Html.Attributes as Attributes
-import Html.Events as Events
+import Html.Attributes as HA
+import Html.Events as HE
 import Identicon exposing (identicon)
 
 
-main : Signal Html
+main : Program Never
 main =
-  start
-    { model = init
-    , update = update
-    , view = view
-    }
+    Html.App.beginnerProgram
+        { model = init
+        , update = update
+        , view = view
+        }
 
 
 type alias Model =
-  String
+    String
 
 
 init : Model
 init =
-  "Hello!"
+    "Hello!"
 
 
-update : String -> Model -> Model
+type alias Msg =
+    String
+
+
+update : Msg -> Model -> Model
 update text model =
-  text
+    text
 
 
-view : Signal.Address String -> Model -> Html
-view address model =
-  let
-    field =
-      Html.input
-        [ Attributes.placeholder "Enter a string..."
-        , Events.on "input" Events.targetValue (Signal.message address)
-        , inputStyle
-        ]
-        []
+view : Model -> Html Msg
+view model =
+    let
+        field =
+            Html.input
+                [ HA.placeholder "Enter a string..."
+                , HE.onInput identity
+                , inputStyle
+                ]
+                []
 
-    icon =
-      Html.div [ iconStyle ] [ identicon model ]
-  in
-    Html.div [] [ field, icon ]
+        icon =
+            Html.div [ iconStyle ] [ identicon "200px" model ]
+    in
+        Html.div [] [ field, icon ]
 
 
-inputStyle : Attribute
+inputStyle : Attribute Msg
 inputStyle =
-  Attributes.style
-    [ ( "width", "100%" )
-    , ( "height", "40px" )
-    , ( "padding", "10px 0" )
-    , ( "font-size", "2em" )
-    , ( "text-align", "center" )
-    ]
+    HA.style
+        [ ( "width", "100%" )
+        , ( "height", "40px" )
+        , ( "padding", "10px 0" )
+        , ( "font-size", "2em" )
+        , ( "text-align", "center" )
+        ]
 
 
-iconStyle : Attribute
+iconStyle : Attribute Msg
 iconStyle =
-  Attributes.style
-    [ ( "width", "200px" )
-    , ( "height", "200px" )
-    , ( "padding", "50px 0" )
-    , ( "margin", "auto" )
-    , ( "font-size", "2em" )
-    , ( "text-align", "center" )
-    ]
+    HA.style
+        [ ( "width", "200px" )
+        , ( "height", "200px" )
+        , ( "padding", "50px 0" )
+        , ( "margin", "auto" )
+        , ( "font-size", "2em" )
+        , ( "text-align", "center" )
+        ]

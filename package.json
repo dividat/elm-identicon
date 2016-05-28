@@ -1,0 +1,28 @@
+{
+    "name": "elm-identicon",
+    "version": "1.0.1",
+    "description": "Generate identicons in Elm",
+    "main": "index.js",
+    "directories": {
+        "example": "example"
+    },
+    "dependencies": {
+        "elm": "^0.17.0"
+    },
+    "devDependencies": {},
+    "scripts": {
+        "postinstall": "elm package install && cd example && elm package install",
+        "start": "cd example && elm reactor",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/pukkamustard/elm-identicon.git"
+    },
+    "author": "",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/pukkamustard/elm-identicon/issues"
+    },
+    "homepage": "https://github.com/pukkamustard/elm-identicon#readme"
+}

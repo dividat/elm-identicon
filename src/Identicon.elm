@@ -37,8 +37,8 @@ identicon size string =
         Svg.svg
             [ Attributes.viewBox "0 0 5 5"
             , Attributes.fill (color hash)
-            , Attributes.height (toString size)
-            , Attributes.width (toString size)
+            , Attributes.height size
+            , Attributes.width size
             , Attributes.shapeRendering "crispEdges"
             ]
             pixels

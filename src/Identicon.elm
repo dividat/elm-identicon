@@ -1,9 +1,9 @@
-module Identicon exposing (identicon)
+module Identicon exposing (identicon, identicolor)
 
 {-| Generate an identicon from a string.
 
 # Functions
-@docs identicon
+@docs identicon, identicolor
 
 -}
 
@@ -11,6 +11,7 @@ import Svg exposing (Svg)
 import Svg.Attributes as Attributes
 import String
 import Char
+import Color exposing (Color)
 import Bitwise
 import Html as H
 
@@ -36,13 +37,22 @@ identicon size string =
     in
         Svg.svg
             [ Attributes.viewBox "0 0 5 5"
-            , Attributes.fill (color hash)
+            , Attributes.fill (color hash |> toRgbString)
             , Attributes.height size
             , Attributes.width size
             , Attributes.shapeRendering "crispEdges"
             ]
             pixels
 
+
+{-| Generate an HSL color string from a string
+
+This generates the same color that would be used in the identicon.
+
+-}
+identicolor : String -> Color
+identicolor string =
+    color <| computeHash string
 
 {-| One-at-a-Time Hash
 
@@ -85,13 +95,20 @@ mirror ( x, y ) =
     ( 4 - x, y )
 
 
-color : Int -> String
+color : Int -> Color
 color hash =
+    Color.hsl (degrees <| toFloat <| hash % 360) 0.5 0.7
+
+
+toRgbString : Color -> String
+toRgbString color =
     let
-        hue =
-            hash % 360
+        rgb = Color.toRgb color
+
+        values =
+            List.map toString [ rgb.red, rgb.green, rgb.blue ]
     in
-        "hsl(" ++ toString hue ++ ", 50%, 70%)"
+        "rgb(" ++ String.join "," values ++ ")"
 
 
 pixel : ( Int, Int ) -> Svg msg

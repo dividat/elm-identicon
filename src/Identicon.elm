@@ -45,7 +45,7 @@ identicon size string =
             pixels
 
 
-{-| Generate an HSL color string from a string
+{-| Generate a color from a string
 
 This generates the same color that would be used in the identicon.
 

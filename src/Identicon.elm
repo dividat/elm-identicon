@@ -30,7 +30,7 @@ identicon size string =
         pixels =
             List.repeat 15 0
                 |> List.indexedMap always
-                |> List.filter (\i -> hash `Bitwise.shiftRight` i % 2 == 0)
+                |> List.filter (\i -> Bitwise.shiftRightBy i hash % 2 == 0)
                 |> List.map toCoordinates
                 |> (\l -> List.append l (List.map mirror l))
                 |> List.map pixel
@@ -54,6 +54,7 @@ identicolor : String -> Color
 identicolor string =
     color <| computeHash string
 
+
 {-| One-at-a-Time Hash
 
   Taken from http://www.burtleburtle.net/bob/hash/doobs.html.
@@ -66,16 +67,16 @@ computeHash string =
             \b h ->
                 h
                     |> (+) b
-                    |> (\x -> x + Bitwise.shiftLeft 10 x)
-                    |> (\x -> Bitwise.xor x (Bitwise.shiftRight 6 x))
+                    |> (\x -> x + Bitwise.shiftLeftBy x 10)
+                    |> (\x -> Bitwise.xor x (Bitwise.shiftRightBy x 6))
     in
         string
             |> String.toList
             |> List.map Char.toCode
             |> List.foldr step 0
-            |> (\x -> x + Bitwise.shiftLeft 3 x)
-            |> (\x -> Bitwise.xor x (Bitwise.shiftRight 11 x))
-            |> (\x -> x + Bitwise.shiftLeft 15 x)
+            |> (\x -> x + Bitwise.shiftLeftBy x 3)
+            |> (\x -> Bitwise.xor x (Bitwise.shiftRightBy x 11))
+            |> (\x -> x + Bitwise.shiftLeftBy x 15)
 
 
 toCoordinates : Int -> ( Int, Int )
@@ -103,7 +104,8 @@ color hash =
 toRgbString : Color -> String
 toRgbString color =
     let
-        rgb = Color.toRgb color
+        rgb =
+            Color.toRgb color
 
         values =
             List.map toString [ rgb.red, rgb.green, rgb.blue ]

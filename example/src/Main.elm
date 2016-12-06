@@ -1,15 +1,13 @@
 module Main exposing (..)
 
-import Html.App
 import Html exposing (Html, Attribute)
 import Html.Attributes as HA
 import Html.Events as HE
 import Identicon exposing (identicon)
 
 
-main : Program Never
 main =
-    Html.App.beginnerProgram
+    Html.beginnerProgram
         { model = init
         , update = update
         , view = view

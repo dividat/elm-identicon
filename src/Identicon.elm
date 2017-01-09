@@ -1,19 +1,26 @@
-module Identicon exposing (identicon, identicolor)
+module Identicon exposing (computeHash, custom, identicon, identicolor)
 
 {-| Generate an identicon from a string.
 
-# Functions
+# Creating
 @docs identicon, identicolor
+
+# Hashing
+@docs computeHash
+
+# Custom
+@docs custom
 
 -}
 
-import Svg exposing (Svg)
-import Svg.Attributes as Attributes
-import String
 import Char
 import Color exposing (Color)
 import Bitwise
-import Html as H
+import Html exposing (Html)
+import Svg exposing (Svg)
+import Svg.Attributes as Attr
+import String
+import Tuple
 
 
 {-| Generate a identicon from a string
@@ -21,28 +28,9 @@ import Html as H
     main =
       identicon "200px" "Hello identicon!"
 -}
-identicon : String -> String -> H.Html msg
-identicon size string =
-    let
-        hash =
-            computeHash string
-
-        pixels =
-            List.repeat 15 0
-                |> List.indexedMap always
-                |> List.filter (\i -> Bitwise.shiftRightBy i hash % 2 == 0)
-                |> List.map toCoordinates
-                |> (\l -> List.append l (List.map mirror l))
-                |> List.map pixel
-    in
-        Svg.svg
-            [ Attributes.viewBox "0 0 5 5"
-            , Attributes.fill (color hash |> toRgbString)
-            , Attributes.height size
-            , Attributes.width size
-            , Attributes.shapeRendering "crispEdges"
-            ]
-            pixels
+identicon : String -> String -> Html msg
+identicon =
+    custom computeHash color
 
 
 {-| Generate a color from a string
@@ -51,8 +39,8 @@ This generates the same color that would be used in the identicon.
 
 -}
 identicolor : String -> Color
-identicolor string =
-    color <| computeHash string
+identicolor =
+    color << computeHash
 
 
 {-| One-at-a-Time Hash
@@ -61,30 +49,63 @@ identicolor string =
 
 -}
 computeHash : String -> Int
-computeHash string =
+computeHash =
     let
-        step =
-            \b h ->
-                h
-                    |> (+) b
-                    |> (\x -> x + Bitwise.shiftLeftBy x 10)
-                    |> (\x -> Bitwise.xor x (Bitwise.shiftRightBy x 6))
+        step : Int -> Int -> Int
+        step b =
+            (+) b
+                >> (\x -> x + Bitwise.shiftLeftBy x 10)
+                >> (\x -> Bitwise.xor x (Bitwise.shiftRightBy x 6))
     in
-        string
-            |> String.toList
-            |> List.map Char.toCode
-            |> List.foldr step 0
-            |> (\x -> x + Bitwise.shiftLeftBy x 3)
-            |> (\x -> Bitwise.xor x (Bitwise.shiftRightBy x 11))
-            |> (\x -> x + Bitwise.shiftLeftBy x 15)
+        String.toList
+            >> List.foldr (Char.toCode >> step) 0
+            >> (\x -> x + Bitwise.shiftLeftBy x 3)
+            >> (\x -> Bitwise.xor x (Bitwise.shiftRightBy x 11))
+            >> (\x -> x + Bitwise.shiftLeftBy x 15)
+
+
+{-| Creates an identicon with your own hasher/colorer where the string
+passed in is fed into the hasher and that hash is then fed into the
+colorer.  Here's how to create an identicon that's always the color red:
+
+    import Color exposing (rgb)
+
+    main =
+        custom computeHash (always <| rgb 255 0 0) "200px" "Hello Identicon!"
+-}
+custom : (String -> Int) -> (Int -> Color) -> String -> String -> Html msg
+custom hasher colorer size string =
+    let
+        hash : Int
+        hash =
+            hasher string
+
+        pixels : List (Svg msg)
+        pixels =
+            List.range 0 14
+                |> List.filter (\i -> Bitwise.shiftRightBy i hash % 2 == 0)
+                |> List.map toCoordinates
+                |> (\l -> List.append l <| List.map mirror l)
+                |> List.map pixel
+    in
+        Svg.svg
+            [ Attr.viewBox "0 0 5 5"
+            , Attr.fill (colorer hash |> toRgbString)
+            , Attr.height size
+            , Attr.width size
+            , Attr.shapeRendering "crispEdges"
+            ]
+            pixels
 
 
 toCoordinates : Int -> ( Int, Int )
 toCoordinates i =
     let
+        x : Int
         x =
             floor (toFloat i / 5)
 
+        y : Int
         y =
             i % 5
     in
@@ -92,8 +113,8 @@ toCoordinates i =
 
 
 mirror : ( number, a ) -> ( number, a )
-mirror ( x, y ) =
-    ( 4 - x, y )
+mirror =
+    Tuple.mapFirst ((-) 4)
 
 
 color : Int -> Color
@@ -104,22 +125,20 @@ color hash =
 toRgbString : Color -> String
 toRgbString color =
     let
-        rgb =
+        { red, green, blue } =
             Color.toRgb color
-
-        values =
-            List.map toString [ rgb.red, rgb.green, rgb.blue ]
     in
-        "rgb(" ++ String.join "," values ++ ")"
+        List.map toString [ red, green, blue ]
+            |> String.join ","
+            |> \rgbs -> "rgb(" ++ rgbs ++ ")"
 
 
 pixel : ( Int, Int ) -> Svg msg
 pixel ( x, y ) =
-    (Svg.rect
-        [ Attributes.y (toString y)
-        , Attributes.x (toString x)
-        , Attributes.width "1"
-        , Attributes.height "1"
+    Svg.rect
+        [ Attr.y <| toString y
+        , Attr.x <| toString x
+        , Attr.width "1"
+        , Attr.height "1"
         ]
         []
-    )

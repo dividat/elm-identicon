@@ -1,15 +1,12 @@
-module Identicon exposing (computeHash, custom, identicon, identicolor)
+module Identicon exposing (custom, defaultColor, defaultHash, identicon)
 
 {-| Generate an identicon from a string.
 
 # Creating
-@docs identicon, identicolor
+@docs identicon, custom
 
-# Hashing
-@docs computeHash
-
-# Custom
-@docs custom
+# Defaults
+@docs defaultHash, defaultColor
 
 -}
 
@@ -30,50 +27,19 @@ import Tuple
 -}
 identicon : String -> String -> Html msg
 identicon =
-    custom computeHash color
+    custom defaultHash defaultColor
 
 
-{-| Generate a color from a string
-
-This generates the same color that would be used in the identicon.
-
--}
-identicolor : String -> Color
-identicolor =
-    color << computeHash
-
-
-{-| One-at-a-Time Hash
-
-  Taken from http://www.burtleburtle.net/bob/hash/doobs.html.
-
--}
-computeHash : String -> Int
-computeHash =
-    let
-        step : Int -> Int -> Int
-        step b =
-            (+) b
-                >> (\x -> x + Bitwise.shiftLeftBy x 10)
-                >> (\x -> Bitwise.xor x (Bitwise.shiftRightBy x 6))
-    in
-        String.toList
-            >> List.foldr (Char.toCode >> step) 0
-            >> (\x -> x + Bitwise.shiftLeftBy x 3)
-            >> (\x -> Bitwise.xor x (Bitwise.shiftRightBy x 11))
-            >> (\x -> x + Bitwise.shiftLeftBy x 15)
-
-
-{-| Creates an identicon with your own hasher/colorer where the string
-passed in is fed into the hasher and that hash is then fed into the
-colorer.  Here's how to create an identicon that's always the color red:
+{-| Creates an identicon with your own hasher/colorer where the string is
+passed into both the hasher and colorer.  Here's how to create an identicon
+that's always the color red:
 
     import Color exposing (rgb)
 
     main =
-        custom computeHash (always <| rgb 255 0 0) "200px" "Hello Identicon!"
+        custom defaultHash (always <| rgb 255 0 0) "200px" "Hello Identicon!"
 -}
-custom : (String -> Int) -> (Int -> Color) -> String -> String -> Html msg
+custom : (String -> Int) -> (String -> Color) -> String -> String -> Html msg
 custom hasher colorer size string =
     let
         hash : Int
@@ -90,12 +56,43 @@ custom hasher colorer size string =
     in
         Svg.svg
             [ Attr.viewBox "0 0 5 5"
-            , Attr.fill (colorer hash |> toRgbString)
+            , Attr.fill (colorer string |> toRgbString)
             , Attr.height size
             , Attr.width size
             , Attr.shapeRendering "crispEdges"
             ]
             pixels
+
+
+{-| Generate a color from a string
+
+This generates the same color that would be used in the identicon.
+
+-}
+defaultColor : String -> Color
+defaultColor =
+    color << defaultHash
+
+
+{-| One-at-a-Time Hash
+
+  Taken from http://www.burtleburtle.net/bob/hash/doobs.html.
+
+-}
+defaultHash : String -> Int
+defaultHash =
+    let
+        step : Int -> Int -> Int
+        step b =
+            (+) b
+                >> (\x -> x + Bitwise.shiftLeftBy x 10)
+                >> (\x -> Bitwise.xor x (Bitwise.shiftRightBy x 6))
+    in
+        String.toList
+            >> List.foldr (Char.toCode >> step) 0
+            >> (\x -> x + Bitwise.shiftLeftBy x 3)
+            >> (\x -> Bitwise.xor x (Bitwise.shiftRightBy x 11))
+            >> (\x -> x + Bitwise.shiftLeftBy x 15)
 
 
 toCoordinates : Int -> ( Int, Int )

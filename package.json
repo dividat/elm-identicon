@@ -1,6 +1,6 @@
 {
     "name": "elm-identicon",
-    "version": "2.2.0",
+    "version": "3.0.0",
     "description": "Generate identicons in Elm",
     "main": "index.js",
     "directories": {

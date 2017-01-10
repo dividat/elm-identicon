@@ -1,5 +1,5 @@
 {
-    "version": "2.2.0",
+    "version": "3.0.0",
     "summary": "Generate identicons",
     "repository": "https://github.com/pukkamustard/elm-identicon.git",
     "license": "MIT",

@@ -1,16 +1,18 @@
-module Main exposing (..)
+module Main exposing (Model, Msg, iconStyles, init, inputStyles, main, styleAttribs, update, view)
 
-import Html exposing (Html, Attribute)
+import Browser
+import Html exposing (Attribute, Html)
 import Html.Attributes as HA
 import Html.Events as HE
 import Identicon exposing (identicon)
 
 
+main : Program () Model Msg
 main =
-    Html.beginnerProgram
-        { model = init
-        , update = update
+    Browser.sandbox
+        { init = init
         , view = view
+        , update = update
         }
 
 
@@ -37,21 +39,27 @@ view model =
     let
         field =
             Html.input
-                [ HA.placeholder "Enter a string..."
-                , HE.onInput identity
-                , inputStyle
-                ]
+                (HA.placeholder "Enter a string..."
+                    :: HE.onInput identity
+                    :: inputStyles
+                )
                 []
 
         icon =
-            Html.div [ iconStyle ] [ identicon "200px" model ]
+            Html.div iconStyles [ identicon "200px" model ]
     in
-        Html.div [] [ field, icon ]
+    Html.div [] [ field, icon ]
 
 
-inputStyle : Attribute Msg
-inputStyle =
-    HA.style
+styleAttribs : List ( String, String ) -> List (Attribute Msg)
+styleAttribs styles =
+    styles
+        |> List.map (\( k, v ) -> HA.style k v)
+
+
+inputStyles : List (Attribute Msg)
+inputStyles =
+    styleAttribs
         [ ( "width", "100%" )
         , ( "height", "40px" )
         , ( "padding", "10px 0" )
@@ -60,9 +68,9 @@ inputStyle =
         ]
 
 
-iconStyle : Attribute Msg
-iconStyle =
-    HA.style
+iconStyles : List (Attribute Msg)
+iconStyles =
+    styleAttribs
         [ ( "width", "200px" )
         , ( "height", "200px" )
         , ( "padding", "50px 0" )

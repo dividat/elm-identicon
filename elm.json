@@ -3,7 +3,7 @@
     "name": "dividat/elm-identicon",
     "summary": "Generate identicons",
     "license": "MIT",
-    "version": "4.0.0",
+    "version": "1.0.0",
     "exposed-modules": [
         "Identicon"
     ],

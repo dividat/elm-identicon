@@ -42,9 +42,12 @@ identicon =
 passed into both the hasher and colorer. Here's how to create an identicon
 that's always the color red:
 
-    import Color exposing (rgb255)
+    import Color exposing (rgb255) -- from avh4/elm-color
+    import Identicon exposing (custom, defaultHash)
+    import Html exposing (Html)
 
-    main =
+    view : Html msg
+    view =
         custom defaultHash (always <| rgb255 255 0 0) "200px" "Hello Identicon!"
 
 -}
